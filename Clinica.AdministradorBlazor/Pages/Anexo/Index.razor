@@ -1,0 +1,56 @@
+﻿@page "/Anexo/index"
+@using Clinica.AdministradorBlazor.Model
+@inject HttpClient httpClient
+@inject NavigationManager NavigationManager
+
+<MudText Typo="Typo.h2" Class="ml">Anexos medicos</MudText>
+
+<MudTable Items="@anexos" Hover="true" Bordered="true" Striped="true">
+    <ToolBarContent>
+        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="goAdd" />
+        <MudSpacer />
+        <MudTextField @bind-Value="searchText" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Id</MudTh>
+        
+        <MudTh>Anexos medicos</MudTh>
+       
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
+       
+        <MudTd DataLabel="Anexo">@context.Anexo</MudTd>
+
+        <MudButton Link="@($"/Anexo/Editar/{context.Id}")" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Tertiary"
+                   Class="text-center">Editar</MudButton>
+        <MudButton Link="@($"/Anexo/Eliminar/{context.Id}")" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning"
+                   Class="text-center">Eliminar</MudButton>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
+
+@code {
+
+    private IEnumerable<Anexos> anexos = new List<Anexos>();
+    private string searchText = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await getAll();
+    }
+
+    private async Task getAll()
+    {
+        var httpResponse = await httpClient.GetStringAsync("Anexos");
+        anexos = JsonSerializer.Deserialize<IEnumerable<Anexos>>(httpResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    }
+
+    private void goAdd()
+    {
+        NavigationManager.NavigateTo("Anexo/Agregar");
+    }
+
+}

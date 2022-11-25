@@ -1,0 +1,115 @@
+﻿@page "/Paciente/eliminar/{id:int}"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService _localStorageService
+
+<MudText Typo="Typo.h2" Class="ml">Eliminar Municipio</MudText>
+
+<MudGrid>
+    <MudItem xs="12" sm="7">
+        <MudPaper Class="pa-4">
+            <EditForm Model="paciente" OnValidSubmit="OnValidSubmit">
+                <DataAnnotationsValidator />
+                <MudCard>
+                    <MudCardContent>
+
+                        <MudSelect Variant="Variant.Outlined" Label="Medico de la consulta" AnchorOrigin="Origin.BottomCenter"
+                                   @bind-Value="paciente.IdMedico" For="@(() => paciente.IdMedico)">
+                            @foreach (var item in med)
+                            {
+                                <MudSelectItem Value="@item.Id">@item.Nombre</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <MudSelect Variant="Variant.Outlined" Label="Ultimo Examene del paciente" AnchorOrigin="Origin.BottomCenter"
+                                   @bind-Value="paciente.IdExamen" For="@(() => paciente.IdExamen)">
+                            @foreach (var item in exam)
+                            {
+                                <MudSelectItem Value="@item.Id">@item.Examen</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSelect Variant="Variant.Outlined" Label="Anexos de paciente" AnchorOrigin="Origin.BottomCenter"
+                                   @bind-Value="paciente.IdAnexo" For="@(() => paciente.IdAnexo)">
+                            @foreach (var item in anex)
+                            {
+                                <MudSelectItem Value="@item.Id">@item.Anexo</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <MudTextField Label="Nombre" @bind-Value="paciente.Nombre" For="@(() => paciente.Nombre)" />
+                        <MudTextField Label="Edad" @bind-Value="paciente.Edad" For="@(() => paciente.Edad)" />
+                        <MudTextField Label="Telefono" @bind-Value="paciente.Telefono" For="@(() => paciente.Telefono)" />
+                        <MudTextField Label="Fecha de Naciemiento" @bind-Value="paciente.FechaNacimiento" For="@(() => paciente.FechaNacimiento)" />
+                        <MudTextField Label="Genero" @bind-Value="paciente.Genero" For="@(() => paciente.Genero)" />
+
+
+                        
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Error" Class="ml-auto">Eliminar</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </EditForm>
+            @if (showLeaveAlert)
+            {
+                <MudAlert Severity="Severity.Error" ContentAlignment="HorizontalAlignment.Center" ShowCloseIcon="true" CloseIconClicked="(() => CloseMe(true))">Ocurrió un problema.</MudAlert>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+
+    private IEnumerable<Anexos> anex = new List<Anexos>();
+    private IEnumerable<Medico> med = new List<Medico>();
+    private IEnumerable<Examenes> exam = new List<Examenes>();
+    private bool showLeaveAlert = false;
+    Paciente paciente = new Paciente();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Http.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue("Bearer", await _localStorageService.GetItemAsync<string>("token"));
+        await getAll();
+
+        var resp = await Http.GetStringAsync("Paciente/" + id);
+        paciente= JsonSerializer.Deserialize<Paciente>(resp, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        await eliminar();
+    }
+
+    private async Task eliminar()
+    {
+        var httpResponse = await Http.DeleteAsync("Paciente/" + paciente.Id);
+
+        if (!(httpResponse.StatusCode == System.Net.HttpStatusCode.OK))
+        {
+            showLeaveAlert = true;
+        }
+        else
+        {
+            NavigationManager.NavigateTo("Paciente/index");
+        }
+    }
+
+    private void CloseMe(bool value)
+    {
+        showLeaveAlert = false;
+    }
+
+    private async Task getAll()
+    {
+        var httpResponse = await Http.GetStringAsync("Medicos");
+        var httpResponse2 = await Http.GetStringAsync("Anexos");
+        var httpResponse3 = await Http.GetStringAsync("Examenes");
+        med = JsonSerializer.Deserialize<IEnumerable<Medico>>(httpResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        anex = JsonSerializer.Deserialize<IEnumerable<Anexos>>(httpResponse2, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        exam = JsonSerializer.Deserialize<IEnumerable<Examenes>>(httpResponse3, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    }
+}

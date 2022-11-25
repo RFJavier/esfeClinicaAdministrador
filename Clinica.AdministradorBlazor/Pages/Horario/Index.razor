@@ -1,0 +1,60 @@
+﻿@page "/Horario/Index"
+@inject HttpClient httpClient
+@inject NavigationManager NavigationManager
+
+<MudText Typo="Typo.h2" Class="ml">Horarios de Medicos</MudText>
+
+<MudTable Items="@horarios" Hover="true" Bordered="true" Striped="true">
+    <ToolBarContent>
+        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="goAdd" />
+        <MudSpacer />
+        <MudTextField @bind-Value="searchText" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Id</MudTh>
+        <MudTh>IdMedico</MudTh>
+        <MudTh>Nombre de Medico</MudTh>
+        <MudTh>Entrada</MudTh>
+        <MudTh>Salida</MudTh>
+       
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
+        <MudTd DataLabel="IdMedico">@context.IdMedico</MudTd>
+        <MudTd DataLabel="Medico">@context.Medico.Nombre</MudTd>
+        <MudTd DataLabel="Entrada">@context.Entrada</MudTd>
+        <MudTd DataLabel="Salida">@context.Salida</MudTd>
+
+        <MudButton Link="@($"/Anexo/Editar/{context.Id}")" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Tertiary"
+                   Class="text-center">Editar</MudButton>
+        <MudButton Link="@($"/Anexo/Eliminar/{context.Id}")" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning"
+                   Class="text-center">Eliminar</MudButton>
+       
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
+
+@code {
+    private IEnumerable<Horario> horarios = new List<Horario>();
+    private string searchText = "";
+    private Horario horario = new Horario();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await getAll();
+    }
+
+    private async Task getAll()
+    {
+        var httpResponse = await httpClient.PostAsJsonAsync("Horarios/Buscar", horario);
+        string respString = await httpResponse.Content.ReadAsStringAsync();
+        horarios = JsonSerializer.Deserialize<IEnumerable<Horario>>(respString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    }
+
+    private void goAdd()
+    {
+        NavigationManager.NavigateTo("Horario/Agregar");
+    }
+}

@@ -1,0 +1,70 @@
+﻿@page "/Paciente/Index"
+@inject HttpClient httpClient
+@inject NavigationManager NavigationManager
+
+<MudText Typo="Typo.h2" Class="ml">Registro de pacientes</MudText>
+
+<MudTable Items="@pacientes" Hover="true" Bordered="true" Striped="true">
+    <ToolBarContent>
+        <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="goAdd" />
+        <MudSpacer />
+        <MudTextField @bind-Value="searchText" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Id</MudTh>
+        <MudTh>Nombre de Medico de la consulta</MudTh>
+        <MudTh>Ultimo Examen</MudTh>
+        <MudTh>Anexo de cosulta</MudTh>
+        
+        <MudTh>Nombre</MudTh>
+        <MudTh>Edad</MudTh>
+        <MudTh>Telefono</MudTh>
+        <MudTh>Fecha de Nacimiento</MudTh>
+        <MudTh>Genero</MudTh>
+       
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Id">@context.Id</MudTd>
+        <MudTd DataLabel="IdMedico">@context.Medico.Nombre</MudTd>
+        <MudTd DataLabel="IdExamen">@context.Examenes.Examen</MudTd>
+        <MudTd DataLabel="IdAnexo">@context.Anexos.Anexo</MudTd>
+        
+        <MudTd DataLabel="Nombre">@context.Nombre</MudTd>
+        <MudTd DataLabel="Edad">@context.Edad</MudTd>
+        <MudTd DataLabel="Telefono">@context.Telefono</MudTd>
+        <MudTd DataLabel="FechaNacimiento">@context.FechaNacimiento</MudTd>
+        <MudTd DataLabel="Genero">@context.Genero</MudTd>
+
+        <MudButton Link="@($"/Paciente/Editar/{context.Id}")" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Tertiary"
+                   Class="text-center">Editar</MudButton>
+        <MudButton Link="@($"/Paciente/Eliminar/{context.Id}")" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning"
+                   Class="text-center">Eliminar</MudButton>
+       
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
+
+@code {
+    private IEnumerable<Paciente> pacientes = new List<Paciente>();
+    private string searchText = "";
+    private Paciente paciente = new Paciente();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await getAll();
+    }
+
+    private async Task getAll()
+    {
+        var httpResponse = await httpClient.PostAsJsonAsync("Paciente/Buscar", paciente);
+        string respString = await httpResponse.Content.ReadAsStringAsync();
+        pacientes = JsonSerializer.Deserialize<IEnumerable<Paciente>>(respString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    }
+
+    private void goAdd()
+    {
+        NavigationManager.NavigateTo("Paciente/Agregar");
+    }
+}
