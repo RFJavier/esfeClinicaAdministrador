@@ -1,0 +1,96 @@
+﻿@page "/Horario/eliminar/{id:int}"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService _localStorageService
+
+<MudText Typo="Typo.h2" Class="ml">Eliminar Horario</MudText>
+
+<MudGrid>
+    <MudItem xs="12" sm="7">
+        <MudPaper Class="pa-4">
+            <EditForm Model="hor" OnValidSubmit="OnValidSubmit">
+                <DataAnnotationsValidator />
+                <MudCard>
+                    <MudCardContent>
+
+                        <MudSelect Variant="Variant.Outlined" Label="Medico de la consulta" AnchorOrigin="Origin.BottomCenter"
+                                   @bind-Value="hor.IdMedico" For="@(() => hor.IdMedico)">
+                            @foreach (var item in med)
+                            {
+                                <MudSelectItem Value="@item.Id">@item.Nombre</MudSelectItem>
+                            }
+                        </MudSelect>
+
+
+                        <MudTextField Label="entrada" @bind-Value="hor.Entrada" For="@(() => hor.Entrada)" />
+                        <MudTextField Label="Salida" @bind-Value="hor.Salida" For="@(() => hor.Salida)" />
+                       
+
+
+                        
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Error" Class="ml-auto">Eliminar</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </EditForm>
+            @if (showLeaveAlert)
+            {
+                <MudAlert Severity="Severity.Error" ContentAlignment="HorizontalAlignment.Center" ShowCloseIcon="true" CloseIconClicked="(() => CloseMe(true))">Ocurrió un problema.</MudAlert>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+
+    
+    private IEnumerable<Medico> med = new List<Medico>();
+    private bool showLeaveAlert = false;
+    Horario hor = new Horario();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Http.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue("Bearer", await _localStorageService.GetItemAsync<string>("token"));
+        await getMedico();
+
+        var resp = await Http.GetStringAsync("Horarios/" + id);
+        hor = JsonSerializer.Deserialize<Horario>(resp, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        await eliminar();
+    }
+
+    private async Task eliminar()
+    {
+        var httpResponse = await Http.DeleteAsync("Horarios/" + hor.Id);
+
+        if (!(httpResponse.StatusCode == System.Net.HttpStatusCode.OK))
+        {
+            showLeaveAlert = true;
+        }
+        else
+        {
+            NavigationManager.NavigateTo("Horario/index");
+        }
+    }
+
+    private void CloseMe(bool value)
+    {
+        showLeaveAlert = false;
+    }
+
+    private async Task getMedico()
+    {
+        
+        var httpResponse = await Http.GetStringAsync("Medicos");
+        med = JsonSerializer.Deserialize<IEnumerable<Medico>>(httpResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+       
+    }
+}
