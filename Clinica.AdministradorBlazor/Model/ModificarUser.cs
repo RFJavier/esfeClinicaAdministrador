@@ -2,10 +2,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.Xml.Linq;
 
-
 namespace Clinica.AdministradorBlazor.Model
 {
-    public class Usuario
+    public class ModificarUser
     {
         [Key]
         public int Id { get; set; }
@@ -27,42 +26,14 @@ namespace Clinica.AdministradorBlazor.Model
         [StringLength(25, ErrorMessage = "Maximo 25 caracteres")]
         public string Login { get; set; }
 
-        [Required(ErrorMessage = "Password es obligatorio")]
-        [DataType(DataType.Password)]
-        [StringLength(32, ErrorMessage = "Password debe estar entre 5 a 32 caracteres", MinimumLength = 5)]
-        public string Password { get; set; }
-
         [Required(ErrorMessage = "Estatus es obligatorio")]
         public byte Estatus { get; set; }
+
 
         [Display(Name = "Fecha registro")]
         public DateTime FechaRegistro { get; set; }
 
         public Roles Rol { get; set; }
 
-       
-
-        [NotMapped]
-        [Required(ErrorMessage = "Confirmar el password")]
-        [StringLength(32, ErrorMessage = "Password debe estar entre 5 a 32 caracteres", MinimumLength = 5 )]
-        [DataType(DataType.Password)]
-        [Compare("Password", ErrorMessage = "Password y confirmar password deben de ser iguales")]
-        [Display(Name = "Confirmar password")]
-        public string ConfirmPassword_aux { get; set; }
-
-    }
-
-    public class UserLogin
-    {
-        [Required(ErrorMessage = "El Login es obligatorio")]
-        public string Login { get; set; }
-        [Required(ErrorMessage = "La contraseña es obligatoria")]
-        public string Password { get; set; }
-    }
-
-    public enum Estatus_Usuario
-    {
-        ACTIVO = 1,
-        INACTIVO = 2
     }
 }

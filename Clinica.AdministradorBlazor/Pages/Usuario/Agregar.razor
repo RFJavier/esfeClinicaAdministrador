@@ -1,0 +1,112 @@
+﻿@page "/Usuario/agregar"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService _localStorageService
+@using Clinica.AdministradorBlazor.Model
+
+<MudText Typo="Typo.h2" Class="ml">Agregar Nuevo Usuario de Sistema</MudText>
+
+<MudGrid>
+    <MudItem xs="12" sm="7">
+        <MudPaper Class="pa-4">
+            <EditForm Model="usuarios" OnValidSubmit="OnValidSubmit">
+                <DataAnnotationsValidator />
+                <MudCard>
+                    <MudCardContent>
+
+                        
+
+                        <MudSelect Variant="Variant.Outlined" Label="Rol de sistema" AnchorOrigin="Origin.BottomCenter"
+                                   @bind-Value="usuarios.IdRol" For="@(() => usuarios.IdRol)">
+                            @foreach (var item in rol)
+                            {
+                                <MudSelectItem Value="@item.Id">@item.Nombre</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <MudTextField Label="Nombre" @bind-Value="usuarios.Nombre" For="@(() => usuarios.Nombre)" />
+                        <MudTextField Label="Apellido" @bind-Value="usuarios.Apellido" For="@(() => usuarios.Apellido)" />
+                        <MudTextField Label="Alias de sistema" @bind-Value="usuarios.Login" For="@(() => usuarios.Login)" />
+                        <MudTextField Label="Contraseña" @bind-Value="usuarios.Password" For="@(() => usuarios.Password)" />
+                        <MudTextField Label="Estatus" @bind-Value="usuarios.Estatus" For="@(() => usuarios.Estatus)" />
+
+                        
+                        
+                        <MudTextField Label="Meses/Dias/Años" @bind-Value="usuarios.FechaRegistro" For="@(() => usuarios.FechaRegistro)" />
+
+                      
+
+                        <MudTextField Label="Confirmar contraseña" @bind-Value="usuarios.ConfirmPassword_aux" For="@(() => usuarios.ConfirmPassword_aux)" />
+                        
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Guardar</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </EditForm>
+            @if (showLeaveAlert)
+            {
+                <MudAlert Severity="Severity.Error" ContentAlignment="HorizontalAlignment.Center" ShowCloseIcon="true" CloseIconClicked="(() => CloseMe(true))">No se pudo guardar.</MudAlert>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+
+    private IEnumerable<Roles> rol = new List<Roles>();
+    private bool showLeaveAlert = false;
+    Usuario usuarios = new Usuario();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        Http.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", await _localStorageService.GetItemAsync<string>("token"));
+        await getRol();
+    }
+
+    
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        await save();
+    }
+
+    private async Task save()
+    {
+        var httpResponse = await Http.PostAsJsonAsync<Usuario>("Usuario", usuarios);
+
+        if (!(httpResponse.StatusCode == System.Net.HttpStatusCode.OK))
+        {
+            showLeaveAlert = true;
+        }
+        else
+        {
+            NavigationManager.NavigateTo("Usuario/index");
+        }
+    }
+
+    private void CloseMe(bool value)
+    {
+        showLeaveAlert = false;
+    }
+
+    private async Task getRol(){
+        var httpResponse = await Http.GetStringAsync("Rol");
+       
+        rol = JsonSerializer.Deserialize<IEnumerable<Roles>>(httpResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+       
+    }
+
+    //private async Task getAnexo()
+    //{
+    //    var httpResponse = await Http.GetStringAsync("Anexos");
+    //    anex = JsonSerializer.Deserialize<IEnumerable<Anexos>>(httpResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    //}
+
+    //private async Task getExamen()
+    //{
+    //    var httpResponse = await Http.GetStringAsync("Examenes");
+    //    exam = JsonSerializer.Deserialize<IEnumerable<Examenes>>(httpResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    //}
+}

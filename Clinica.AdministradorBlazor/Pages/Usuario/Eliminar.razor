@@ -1,0 +1,106 @@
+﻿@page "/Usuario/eliminar/{id:int}"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService _localStorageService
+
+<MudText Typo="Typo.h2" Class="ml">Eliminar Horario</MudText>
+
+<MudGrid>
+    <MudItem xs="12" sm="7">
+        <MudPaper Class="pa-4">
+            <EditForm Model="usuarios" OnValidSubmit="OnValidSubmit">
+                <DataAnnotationsValidator />
+                <MudCard>
+                    <MudCardContent>
+
+                        <MudSelect Variant="Variant.Outlined" Label="Rol de sistema" AnchorOrigin="Origin.BottomCenter"
+                                   @bind-Value="usuarios.IdRol" For="@(() => usuarios.IdRol)">
+                            @foreach (var item in rol)
+                            {
+                                <MudSelectItem Value="@item.Id">@item.Nombre</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <MudTextField Label="Nombre" @bind-Value="usuarios.Nombre" For="@(() => usuarios.Nombre)" />
+                        <MudTextField Label="Apellido" @bind-Value="usuarios.Apellido" For="@(() => usuarios.Apellido)" />
+                        <MudTextField Label="Alias de sistema" @bind-Value="usuarios.Login" For="@(() => usuarios.Login)" />
+                        <MudTextField Label="Contraseña" @bind-Value="usuarios.Password" For="@(() => usuarios.Password)" />
+                        <MudTextField Label="Estatus" @bind-Value="usuarios.Estatus" For="@(() => usuarios.Estatus)" />
+
+                        
+                        
+                        <MudTextField Label="Meses/Dias/Años" @bind-Value="usuarios.FechaRegistro" For="@(() => usuarios.FechaRegistro)" />
+
+                      
+
+                        <MudTextField Label="Confirmar contraseña" @bind-Value="usuarios.ConfirmPassword_aux" For="@(() => usuarios.ConfirmPassword_aux)" />
+                       
+
+
+                        
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Error" Class="ml-auto">Eliminar</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </EditForm>
+            @if (showLeaveAlert)
+            {
+                <MudAlert Severity="Severity.Error" ContentAlignment="HorizontalAlignment.Center" ShowCloseIcon="true" CloseIconClicked="(() => CloseMe(true))">Ocurrió un problema.</MudAlert>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+
+    
+    private IEnumerable<Roles> rol = new List<Roles>();
+    private bool showLeaveAlert = false;
+    Usuario usuarios = new Usuario();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Http.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue("Bearer", await _localStorageService.GetItemAsync<string>("token"));
+        await getRol();
+
+        var resp = await Http.GetStringAsync("Usuario/" + id);
+        usuarios = JsonSerializer.Deserialize<Usuario>(resp, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    }
+
+    private async Task OnValidSubmit(EditContext context)
+    {
+        await eliminar();
+    }
+
+    private async Task eliminar()
+    {
+        var httpResponse = await Http.DeleteAsync("Usuario/" + usuarios.Id);
+
+        if (!(httpResponse.StatusCode == System.Net.HttpStatusCode.OK))
+        {
+            showLeaveAlert = true;
+        }
+        else
+        {
+            NavigationManager.NavigateTo("Usuario/index");
+        }
+    }
+
+    private void CloseMe(bool value)
+    {
+        showLeaveAlert = false;
+    }
+
+    private async Task getRol()
+    {
+        
+        var httpResponse = await Http.GetStringAsync("Rol");
+        rol = JsonSerializer.Deserialize<IEnumerable<Roles>>(httpResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+       
+    }
+}

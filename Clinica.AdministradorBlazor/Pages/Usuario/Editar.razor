@@ -1,0 +1,105 @@
+﻿@page "/Usuario/editar/{id:int}"
+
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService _localStorageService
+
+<MudText Typo="Typo.h2" Class="ml">Editar Datos de usuario</MudText>
+
+<MudGrid>
+    <MudItem xs="12" sm="7">
+        <MudPaper Class="pa-4">
+            <EditForm Model="usuarios" OnValidSubmit="OnValidSubmit">
+                <DataAnnotationsValidator />
+                <MudCard>
+                    <MudCardContent>
+
+                      
+                        <MudSelect Variant="Variant.Outlined" Label="Rol de sistema" AnchorOrigin="Origin.BottomCenter"
+                                   @bind-Value="usuarios.IdRol" For="@(() => usuarios.IdRol)">
+                            @foreach (var item in rol)
+                            {
+                                <MudSelectItem Value="@item.Id">@item.Nombre</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <MudTextField Label="Nombre" @bind-Value="usuarios.Nombre" For="@(() => usuarios.Nombre)" />
+                        <MudTextField Label="Apellido" @bind-Value="usuarios.Apellido" For="@(() => usuarios.Apellido)" />
+                        <MudTextField Label="entrada" @bind-Value="usuarios.Login" For="@(() => usuarios.Login)" />
+                        <MudTextField Label="Estatus Activo=1 Inactivo=2" @bind-Value="usuarios.Estatus" For="@(() => usuarios.Estatus)" />
+                     
+                        
+                        
+                        <MudTextField Label="Meses/Dias/Años" @bind-Value="usuarios.FechaRegistro" For="@(() => usuarios.FechaRegistro)" />
+
+                      
+
+                        
+                                         
+                        
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Guardar cambios</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </EditForm>
+            @if (showLeaveAlert)
+            {
+                <MudAlert Severity="Severity.Error" ContentAlignment="HorizontalAlignment.Center" ShowCloseIcon="true" CloseIconClicked="(() => CloseMe(true))">Ocurrió un problema.</MudAlert>
+            }
+        </MudPaper>
+    </MudItem>
+    </MudGrid>
+
+    @code {
+        [Parameter]
+        public int id { get; set; }
+
+       
+        private IEnumerable<Roles> rol = new List<Roles>();
+       
+        private bool showLeaveAlert = false;
+        ModificarUser usuarios = new ModificarUser();
+
+        protected override async Task OnInitializedAsync()
+        {
+            Http.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", await _localStorageService.GetItemAsync<string>("token"));
+            await getRol();
+
+            var resp = await Http.GetStringAsync("Usuario/" + id);
+            usuarios = JsonSerializer.Deserialize<ModificarUser>(resp, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+
+        private async Task OnValidSubmit(EditContext context)
+        {
+            await saveChanges();
+        }
+
+        private async Task saveChanges()
+        {
+            var httpResponse = await Http.PutAsJsonAsync<ModificarUser>("Usuario/" + usuarios.Id, usuarios);
+
+            if (!(httpResponse.StatusCode == System.Net.HttpStatusCode.OK))
+            {
+                showLeaveAlert = true;
+            }
+            else
+            {
+                NavigationManager.NavigateTo("Usuario/index");
+            }
+        }
+
+        private void CloseMe(bool value)
+        {
+             showLeaveAlert = false;
+        }
+
+           private async Task getRol()
+        {
+            var httpResponse = await Http.GetStringAsync("Rol");
+           
+            rol = JsonSerializer.Deserialize<IEnumerable<Roles>>(httpResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+           
+        }
+    }
