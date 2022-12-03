@@ -4,6 +4,12 @@
 @inject ILocalStorageService _localStorageService
 @using Clinica.AdministradorBlazor.Model
 
+<MudPaper Class="pa-4" Style="@($"color:{Colors.Teal.Lighten2};")">
+   
+
+<MudPaper Class="pa-4" Style="@($"color:{Colors.Teal.Lighten2}; background:{Colors.Grey.Darken1};")">
+   
+
 <MudText Typo="Typo.h2" Class="ml">Agregar Nuevo Usuario de Sistema</MudText>
 
 <MudGrid>
@@ -51,6 +57,9 @@
         </MudPaper>
     </MudItem>
 </MudGrid>
+
+    </MudPaper>
+</MudPaper>
 
 @code {
 

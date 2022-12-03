@@ -4,14 +4,15 @@
 @inject ILocalStorageService _localStorageService
 @inject NavigationManager NavigationManager
 
-<MudThemeProvider />
+<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="MyCustomTheme"  />
 <MudDialogProvider/>
 
-<MudLayout>
+<MudLayout >
     <MudAppBar Elevation="1">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <MudText Typo="Typo.h5" Class="ml-3">Administración</MudText>
+        <MudText Typo="Typo.h5" Class="ml-3">Administración de Clinica</MudText>
         <MudSpacer />
+        <MudSwitch @bind-Checked="@_isDarkMode" Color="Color.Primary" Class="ma-4" T="bool" Label="Cambiar Modo Dia/noche" />
         <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" Edge="Edge.End" OnClick="@((e) => logout())" />        
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
@@ -58,4 +59,34 @@
             }
         }
     }
+
+    MudTheme MyCustomTheme = new MudTheme()
+        {
+            Palette = new Palette()
+            {
+                Primary = Colors.Blue.Default,
+                Secondary = Colors.Green.Accent4,
+                AppbarBackground = Colors.Red.Default,
+               
+                
+                
+
+            },
+            PaletteDark = new PaletteDark()
+            {
+                AppbarBackground = Colors.Red.Default,
+                Primary = Colors.Blue.Lighten1
+            },
+
+            LayoutProperties = new LayoutProperties()
+            {
+                DrawerWidthLeft = "260px",
+                DrawerWidthRight = "300px"
+
+            }
+
+
+        };
+
+    private bool _isDarkMode;
 }
