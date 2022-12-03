@@ -18,7 +18,7 @@
         <MudTh>Apellido</MudTh>
         <MudTh>Alias de Usuario</MudTh>
         <MudTh>Contraseña de usuario</MudTh>
-        
+        <MudTh>Estatus de Usuario</MudTh>
        
     </HeaderContent>
     <RowTemplate>
@@ -28,13 +28,15 @@
         <MudTd DataLabel="Apellido">@context.Apellido</MudTd>
          <MudTd DataLabel="Alias de usuario">@context.Login</MudTd>
         <MudTd DataLabel="Contraseña">@context.Password</MudTd>
+        <MudTd DataLabel="Estatus de usuario">@context.Estatus</MudTd>
         
 
         <MudButton Link="@($"/Usuario/Editar/{context.Id}")" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Tertiary"
-                   Class="text-center">Editar</MudButton>
+                   Class="text-center">Editar Datos</MudButton>
         <MudButton Link="@($"/Usuario/Eliminar/{context.Id}")" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning"
                    Class="text-center">Eliminar</MudButton>
-       
+        @*<MudButton Link="@($"/Usuario/Cambiar/{context.Id}")" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning"
+                   Class="text-center">Modificar Credenciales de Usuario</MudButton>*@
        
     </RowTemplate>
     <PagerContent>
